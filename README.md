@@ -1,45 +1,171 @@
 # WA JERO - Constructor de Invitaciones
 
-Esta aplicación es un constructor visual de invitaciones desarrollado en React, diseñado para crear tarjetas digitales interactivas y elegantes.
+Aplicación full-stack para crear invitaciones digitales interactivas y elegantes con React, Node.js, PostgreSQL y almacenamiento persistente de archivos.
 
-## Resumen del Funcionamiento
+## 🏗️ Arquitectura
 
-### 1. Arquitectura de Componentes
+### Frontend (React)
+- **Editor Visual**: Interfaz drag-and-drop para diseñar invitaciones
+- **Vista Previa en Tiempo Real**: Simulador de móvil con actualización instantánea
+- **Componentes Modulares**: Hero, Música, Galería, RSVP, Ubicación, HTML personalizado
 
-*   **App (Principal):** Gestiona todo el estado de la aplicación.
-*   **Configuración Global:** Almacena colores primarios/secundarios, fuentes y música de fondo.
-*   **Sistema de Secciones:** La tarjeta se divide en módulos independientes (Hero, Música, Texto, Galería, RSVP, Mapa, HTML). Cada módulo tiene su propio id, tipo y datos.
-*   **Renderizado Dinámico:**
-    *   **Editor (Izquierda):** Renderiza controles (inputs, selectores, subida de archivos) para cada sección. Permite arrastrar y soltar (Drag & Drop) para reordenar.
-    *   **Vista Previa (Derecha):** Renderiza el resultado final en tiempo real dentro de un marco que simula un teléfono móvil.
+### Backend (Node.js/Express)
+- **API REST**: Endpoints para subir archivos y guardar invitaciones
+- **Gestión de Archivos**: Multer para procesar uploads con validación de tamaño
+- **Servicio Estático**: Sirve el build de React y archivos subidos
 
-### 2. Funcionalidades Clave
+### Base de Datos (PostgreSQL)
+- **Almacenamiento de Invitaciones**: Guarda configuraciones completas en formato JSON
+- **Búsqueda por Slug**: URLs únicas y amigables para cada invitación
+- **Persistencia**: Las invitaciones se mantienen permanentemente
 
-*   **FileUploader Inteligente:** Convierte imágenes y audio a formato base64 para que funcionen inmediatamente sin necesidad de un backend complejo para la previsualización. Incluye validación de peso (máx 2MB) para optimización móvil.
-*   **Parallax y Decoración:** La sección Hero utiliza CSS `bg-fixed` para el efecto parallax. Todas las secciones permiten una capa superior (`overlayImage`) para GIFs o PNGs decorativos (brillos, hojas, etc.).
-*   **Video Embed:** Detecta automáticamente enlaces de YouTube y los convierte en iframes incrustados.
-*   **Publicación Simulada:** Genera un "slug" único basado en los nombres de la invitación y muestra un modal de éxito con el enlace final.
+### Almacenamiento (Volumen Railway)
+- **Archivos Persistentes**: Las imágenes subidas no se borran entre despliegues
+- **URLs Públicas**: Cada archivo tiene una URL accesible
 
-### 3. Aspectos Técnicos
+## 🚀 Instalación Local
 
-*   Utiliza el hook `useState` para mantener un objeto gigante de configuración (`config`).
-*   Cada vez que editas un campo, se actualiza ese objeto y React vuelve a pintar la vista previa instantáneamente.
-*   Para los estilos, utiliza **Tailwind CSS**, lo que permite que el diseño sea responsivo y moderno con poco código CSS personalizado.
-*   Utiliza la librería **Lucide React** para todos los iconos de la interfaz.
+### Prerrequisitos
+- Node.js 18+ 
+- PostgreSQL (local o Railway)
 
-## Instalación y Uso
+### 1. Instalar Dependencias
+```bash
+npm install
+```
 
-1.  Instalar dependencias:
-    ```bash
-    npm install
-    ```
+### 2. Configurar Variables de Entorno
+Crea un archivo `.env` basado en `.env.example`:
+```bash
+cp .env.example .env
+```
 
-2.  Iniciar el servidor de desarrollo:
-    ```bash
-    npm run dev
-    ```
+Edita `.env` con tus credenciales:
+```env
+PORT=3000
+DATABASE_URL=postgresql://usuario:password@localhost:5432/wajero
+NODE_ENV=development
+```
 
-3.  Construir para producción:
-    ```bash
-    npm run build
-    ```
+### 3. Desarrollo
+
+**Opción A: Frontend + Backend Juntos**
+```bash
+# Terminal 1: Iniciar Vite (frontend)
+npm run dev
+
+# Terminal 2: Iniciar servidor (backend)
+npm run dev:server
+```
+
+**Opción B: Solo Backend (con build de producción)**
+```bash
+npm run build
+npm start
+```
+
+Abre [http://localhost:3000](http://localhost:3000)
+
+## 📦 Despliegue en Railway
+
+Sigue la guía completa en [RAILWAY_SETUP.md](./RAILWAY_SETUP.md)
+
+**Resumen rápido:**
+1. Conecta tu repositorio de GitHub a Railway
+2. Agrega PostgreSQL como servicio
+3. Crea un volumen montado en `/app/uploads`
+4. Railway desplegará automáticamente
+
+## 🎨 Funcionalidades Clave
+
+### Editor Visual
+- **Estilos Globales**: Colores primarios/secundarios, fuentes personalizadas
+- **Secciones Arrastrables**: Reordena secciones con drag & drop
+- **Capas de Diseño**: Fondos, overlays oscuros, decoraciones flotantes (GIFs/PNGs)
+
+### Tipos de Sección
+- **Hero**: Portada con parallax, video YouTube embebido
+- **Música**: Reproductor de audio con controles
+- **Countdown**: Cuenta regresiva al evento
+- **Calendario**: Vista mensual con fecha destacada
+- **Texto**: Bloques de contenido personalizados
+- **Galería**: Grid de imágenes
+- **RSVP**: Formulario o botón de WhatsApp
+- **Ubicación**: Mapa con botón de navegación
+- **HTML**: Contenido personalizado con código
+
+### Sistema de Archivos
+- **Validación Automática**: Límite de 3MB por archivo
+- **Formatos Soportados**: JPG, PNG, GIF, WebP para imágenes; MP3 para audio
+- **Almacenamiento Persistente**: Los archivos se guardan en el volumen de Railway
+
+### Publicación
+- **URLs Únicas**: Cada invitación genera un slug único
+- **Compartir Fácil**: Copia el enlace y compártelo por WhatsApp, email, etc.
+- **100% Responsive**: Optimizado para móviles
+
+## 🛠️ Tecnologías
+
+### Frontend
+- React 19
+- Tailwind CSS 4
+- Lucide React (iconos)
+- Vite (build tool)
+
+### Backend
+- Express 5
+- Multer (file uploads)
+- PostgreSQL (pg)
+- CORS, dotenv
+
+### Despliegue
+- Railway (hosting)
+- PostgreSQL (Railway)
+- Volumen persistente (Railway)
+
+## 📁 Estructura del Proyecto
+
+```
+WA-JERO-MODULAR/
+├── src/
+│   ├── App.jsx           # Componente principal
+│   └── index.css         # Estilos Tailwind
+├── server.js             # Servidor Express
+├── db.js                 # Módulo de base de datos
+├── uploads/              # Archivos subidos (local)
+├── .env.example          # Plantilla de variables
+├── RAILWAY_SETUP.md      # Guía de despliegue
+└── package.json          # Dependencias y scripts
+```
+
+## 🔧 Scripts Disponibles
+
+```bash
+npm run dev          # Inicia Vite (frontend dev)
+npm run dev:server   # Inicia servidor Node.js
+npm run build        # Build de producción
+npm start            # Inicia servidor en producción
+npm run preview      # Preview del build
+```
+
+## 🐛 Troubleshooting
+
+### Error al subir archivos
+- Verifica que el directorio `uploads/` exista
+- En Railway, confirma que el volumen esté montado en `/app/uploads`
+
+### Error de conexión a base de datos
+- Verifica que `DATABASE_URL` esté configurada correctamente
+- En Railway, asegúrate de que PostgreSQL esté activo
+
+### Las imágenes no se muestran
+- Verifica que las URLs comiencen con `/uploads/`
+- Confirma que el servidor esté sirviendo archivos estáticos
+
+## 📝 Licencia
+
+Este proyecto es de uso privado.
+
+## 🤝 Contribuir
+
+Para contribuir al proyecto, contacta al equipo de desarrollo.

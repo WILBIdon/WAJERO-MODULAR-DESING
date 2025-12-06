@@ -168,7 +168,7 @@ const FileUploader = ({ label, currentFile, onFileChange, type = "image", classN
   if (type === "audio") Icon = FileAudio;
   if (type === "overlay") Icon = Sparkles;
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
       // Validación de peso
@@ -178,11 +178,27 @@ const FileUploader = ({ label, currentFile, onFileChange, type = "image", classN
         return;
       }
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        onFileChange(reader.result);
-      };
-      reader.readAsDataURL(file);
+      // Subir archivo al servidor
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al subir el archivo');
+        }
+
+        const data = await response.json();
+        // Devolver la URL del servidor en lugar de Base64
+        onFileChange(data.url);
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error al subir el archivo. Por favor intenta de nuevo.');
+      }
     }
   };
 
@@ -379,16 +395,31 @@ export default function InvitationBuilder() {
     setDraggedItemIndex(index);
   };
 
-  // --- LÓGICA DE PUBLICACIÓN (SIMULADA) ---
-  const handlePublish = () => {
+  // --- LÓGICA DE PUBLICACIÓN (CON BACKEND) ---
+  const handlePublish = async () => {
     setIsPublishing(true);
-    setTimeout(() => {
-      const hero = config.sections.find(s => s.type === 'hero');
-      const names = hero ? hero.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : 'invitacion';
-      const mockUrl = `https://tarjetas-wa-hero.railway.app/${names}`;
-      setPublishedUrl(mockUrl);
+
+    try {
+      const response = await fetch('/api/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(config)
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al guardar la invitación');
+      }
+
+      const data = await response.json();
+      setPublishedUrl(data.url);
       setIsPublishing(false);
-    }, 2000);
+    } catch (error) {
+      console.error('Error:', error);
+      alert('❌ Error al publicar la invitación. Por favor intenta de nuevo.');
+      setIsPublishing(false);
+    }
   };
 
   const renderEditor = () => (
