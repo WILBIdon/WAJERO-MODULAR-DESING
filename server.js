@@ -55,6 +55,7 @@ app.use(express.static(path.join(__dirname, 'dist')));
 
 // --- RUTA 1: Subir Imagen ---
 app.post('/api/upload', upload.single('file'), (req, res) => {
+    console.log(`[UPLOAD] Recibida solicitud de subida. Archivo: ${req.file ? req.file.originalname : 'NINGUNO'}`);
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'No se recibió ningún archivo' });

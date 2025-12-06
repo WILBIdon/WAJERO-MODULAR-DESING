@@ -191,7 +191,10 @@ const FileUploader = ({ label, currentFile, onFileChange, type = "image", classN
         // Verificar primero si la respuesta es JSON válido
         const contentType = response.headers.get("content-type");
         if (!contentType || !contentType.includes("application/json")) {
-          throw new Error("El servidor no devolvió una respuesta válida (posible error de conexión)");
+          // Intentar leer el texto para ver qué devolvió (probablemente HTML de error)
+          const text = await response.text();
+          console.error('Respuesta no JSON:', text.substring(0, 200)); // Log parcial
+          throw new Error(`Error ${response.status} (${response.statusText}): El servidor devolvió ${contentType} en lugar de JSON.`);
         }
 
         const data = await response.json();
