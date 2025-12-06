@@ -188,16 +188,23 @@ const FileUploader = ({ label, currentFile, onFileChange, type = "image", classN
           body: formData
         });
 
-        if (!response.ok) {
-          throw new Error('Error al subir el archivo');
+        // Verificar primero si la respuesta es JSON válido
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("El servidor no devolvió una respuesta válida (posible error de conexión)");
         }
 
         const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Error al subir el archivo');
+        }
+
         // Devolver la URL del servidor en lugar de Base64
         onFileChange(data.url);
       } catch (error) {
         console.error('Error:', error);
-        alert('❌ Error al subir el archivo. Por favor intenta de nuevo.');
+        alert(`❌ Error al subir el archivo: ${error.message}`);
       }
     }
   };

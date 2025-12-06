@@ -121,6 +121,15 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Manejo de errores global (antes del catch-all)
+app.use((err, req, res, next) => {
+    console.error('Error en el servidor:', err.stack);
+    res.status(err.status || 500).json({
+        error: err.message || 'Error interno del servidor',
+        details: process.env.NODE_ENV === 'development' ? err.stack : 'Revisa los logs del servidor'
+    });
+});
+
 // Cualquier otra ruta devuelve el index.html de React (para que funcione el router)
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
