@@ -132,7 +132,8 @@ app.use((err, req, res, next) => {
 });
 
 // Cualquier otra ruta devuelve el index.html de React (para que funcione el router)
-app.get('*', (req, res) => {
+// Usamos una RegEx (/.*/) en lugar del string '*' para compatibilidad con Express 5
+app.get(/.*/, (req, res) => {
     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
