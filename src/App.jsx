@@ -162,7 +162,7 @@ const getYoutubeEmbedUrl = (url) => {
 const FileUploader = ({ label, currentFile, onFileChange, type = "image", className = "" }) => {
   const fileInputRef = useRef(null);
   const acceptType = type === "audio" ? "audio/*" : "image/png, image/jpeg, image/gif, image/webp";
-  const MAX_SIZE_MB = 2; // Límite de 2MB para optimización móvil
+  const MAX_SIZE_MB = 3; // Límite de 3MB para optimización móvil
 
   let Icon = ImageIcon;
   if (type === "audio") Icon = FileAudio;
