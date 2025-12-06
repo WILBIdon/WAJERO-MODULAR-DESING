@@ -364,11 +364,50 @@ export default function InvitationBuilder() {
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishedUrl, setPublishedUrl] = useState(null);
 
+  // Estado para modo "Solo Lectura" (cuando alguien visita la invitación)
+  const [isReadOnly, setIsReadOnly] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
   useEffect(() => {
+    // 1. Cargar fuentes de Google
     const link = document.createElement('link');
     link.href = 'https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Open+Sans:wght@300;400;600&family=Cinzel:wght@400;700&family=Dancing+Script:wght@400;700&family=Great+Vibes&family=Montserrat:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Sacramento&family=Pinyon+Script&family=Italianno&family=Cormorant+Garamond:wght@400;600&display=swap';
     link.rel = 'stylesheet';
     document.head.appendChild(link);
+
+    // 2. Detectar si estamos viendo una invitación publicada
+    const path = window.location.pathname;
+    if (path.startsWith('/invitacion/')) {
+      const slug = path.split('/invitacion/')[1];
+
+      if (slug) {
+        setIsLoading(true);
+
+        // Cargar invitación desde el backend
+        fetch(`/api/invitacion/${slug}`)
+          .then(res => {
+            if (!res.ok) {
+              throw new Error('Invitación no encontrada');
+            }
+            return res.json();
+          })
+          .then(data => {
+            // Cargar la configuración guardada
+            setConfig(data);
+            // Cambiar a modo vista previa
+            setActiveTab('preview');
+            // Activar modo solo lectura
+            setIsReadOnly(true);
+            setIsLoading(false);
+          })
+          .catch(err => {
+            console.error('Error cargando invitación:', err);
+            alert('❌ No se encontró la invitación o el enlace es incorrecto.');
+            setIsLoading(false);
+          });
+      }
+    }
+
     return () => document.head.removeChild(link);
   }, []);
 
@@ -735,14 +774,34 @@ export default function InvitationBuilder() {
         </div>
       )}
 
-      <div className={`w-full md:w-1/2 lg:w-2/5 border-r bg-white z-10 ${activeTab === 'editor' ? 'block' : 'hidden md:block'}`}>{renderEditor()}</div>
-      <div className={`w-full md:w-1/2 lg:w-3/5 bg-slate-200 flex items-center justify-center p-4 md:p-8 relative ${activeTab === 'preview' ? 'block' : 'hidden md:flex'}`}>
-        <div className="md:hidden absolute top-4 left-0 w-full flex justify-center z-50 px-4">
-          <div className="bg-white shadow-xl rounded-full p-1 flex border border-gray-100">
-            <button onClick={() => setActiveTab('editor')} className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${activeTab === 'editor' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500'}`}>Editor</button>
-            <button onClick={() => setActiveTab('preview')} className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${activeTab === 'preview' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500'}`}>Vista Previa</button>
-          </div>
+      {/* Panel del Editor - Solo visible si NO estamos en modo read-only */}
+      {!isReadOnly && (
+        <div className={`w-full md:w-1/2 lg:w-2/5 border-r bg-white z-10 ${activeTab === 'editor' ? 'block' : 'hidden md:block'}`}>
+          {renderEditor()}
         </div>
+      )}
+
+      {/* Panel de Vista Previa - Ancho completo en modo read-only */}
+      <div className={`w-full ${isReadOnly ? 'w-full' : 'md:w-1/2 lg:w-3/5'} bg-slate-200 flex items-center justify-center p-4 md:p-8 relative ${activeTab === 'preview' ? 'block' : 'hidden md:flex'}`}>
+        {/* Botones de navegación móvil - Solo en modo editor */}
+        {!isReadOnly && (
+          <div className="md:hidden absolute top-4 left-0 w-full flex justify-center z-50 px-4">
+            <div className="bg-white shadow-xl rounded-full p-1 flex border border-gray-100">
+              <button onClick={() => setActiveTab('editor')} className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${activeTab === 'editor' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500'}`}>Editor</button>
+              <button onClick={() => setActiveTab('preview')} className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${activeTab === 'preview' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500'}`}>Vista Previa</button>
+            </div>
+          </div>
+        )}
+
+        {/* Indicador de carga */}
+        {isLoading && (
+          <div className="absolute inset-0 z-50 bg-white flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Cargando invitación...</p>
+            </div>
+          </div>
+        )}
         <div className="w-full max-w-[380px] h-[calc(100vh-80px)] md:h-[800px] bg-gray-900 rounded-[3rem] shadow-2xl border-[8px] border-gray-800 relative overflow-hidden ring-4 ring-slate-300">
           <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-40 h-7 bg-black rounded-b-xl z-50 flex justify-center items-center"><div className="w-16 h-1 bg-gray-800 rounded-full"></div></div>
           <div className="w-full h-full bg-white overflow-hidden rounded-[2.3rem]">{renderPreview()}</div>
